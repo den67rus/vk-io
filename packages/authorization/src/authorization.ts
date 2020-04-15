@@ -6,7 +6,8 @@ import {
 	DirectAuthorization,
 
 	ImplicitFlowGroups,
-	ImplicitFlowUser
+	ImplicitFlowUser,
+	ImplicitFlowWebView
 } from './providers';
 
 const openAPIProperties = [
@@ -49,6 +50,27 @@ export class Authorization {
 	}
 
 	/**
+	 * Android apps webview authorization with token apps
+	 */
+	public ImplicitFlowWebView(options: Partial<{
+		sourceUrl: string;
+		scope: string | string[];
+		token?: string;
+		secret?: string;
+	}> = {}): ImplicitFlowWebView {
+		const { token, appSecret } = this.vk.options;
+
+		if (!options.token) {
+			options.token = token;
+		}
+
+		if (!options.secret) {
+			options.secret = appSecret;
+		}
+		return new ImplicitFlowWebView(options);
+	}
+
+	/**
 	 * Direct authorization with login & login in user application
 	 */
 	public direct(): DirectAuthorization {
@@ -60,10 +82,23 @@ export class Authorization {
 	/**
 	 * Direct authorization with login & login in android application
 	 */
-	public androidApp(): DirectAuthorization {
+	public androidApp(deviceId?: string): DirectAuthorization {
+		let genId;
+		if (deviceId === undefined) {
+			genId = createHash('md5')
+				.update(`${new Date()} Android app ID`)
+				.digest('hex');
+			genId = genId.slice(16);
+		}
+
 		return new DirectAuthorization(this.vk, {
 			appId: 2274003,
-			appSecret: 'hHbZxrka2uZ6jB1inYsH'
+			appSecret: 'hHbZxrka2uZ6jB1inYsH',
+			scope: 'full',
+			queryParams: {
+				device_id: (deviceId === undefined) ? genId : deviceId,
+				libverify_support: 1
+			}
 		});
 	}
 

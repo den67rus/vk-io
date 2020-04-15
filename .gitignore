@@ -11,3 +11,6 @@ packages/*/lib
 app.ts
 app.js
 app.mjs
+
+# IntelliJ project files
+.idea

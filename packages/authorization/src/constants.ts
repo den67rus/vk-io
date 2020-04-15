@@ -9,6 +9,11 @@ export const CALLBACK_BLANK = 'https://oauth.vk.com/blank.html';
 export const DESKTOP_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.70 Safari/537.36';
 
 /**
+ * User-Agent for vk apps
+ */
+export const VK_WEB_VIEWS_USER_AGENT = 'Mozilla/5.0 (Linux; Android 8.0.0; Android Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.162 Safari/537.36';
+
+/**
  * Auth error codes
  */
 export enum AuthErrorCode {

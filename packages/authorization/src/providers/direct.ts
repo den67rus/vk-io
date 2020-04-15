@@ -53,6 +53,7 @@ const ACTION_SECURITY_CODE = 'act=security';
 export interface IDirectAuthOptions {
 	appId?: number;
 	appSecret?: string;
+	authScope?: string;
 
 	login?: string;
 	phone?: string | number;
@@ -63,6 +64,14 @@ export interface IDirectAuthOptions {
 	timeout: number;
 
 	apiVersion: string;
+
+	queryParams?: object;
+}
+
+export interface IDirectWebViewAuth {
+	token: string;
+	expires: number;
+	refreshToken: string;
 }
 
 export class DirectAuthorization {
@@ -102,7 +111,9 @@ export class DirectAuthorization {
 			agent = vk.options.agent,
 			timeout = vk.options.authTimeout,
 
-			apiVersion = vk.options.apiVersion
+			apiVersion = vk.options.apiVersion,
+
+			queryParams
 		} = options;
 
 		this.options = {
@@ -117,7 +128,9 @@ export class DirectAuthorization {
 			scope,
 			timeout,
 
-			apiVersion
+			apiVersion,
+
+			queryParams
 		};
 
 		this.started = false;
@@ -170,6 +183,8 @@ export class DirectAuthorization {
 
 		if (scope === 'all' || scope === undefined) {
 			throw new Error('Required option authScope not set');
+		} else if (scope === 'full') {
+			scope = 'nohttps,all';
 		} else if (typeof scope !== 'number') {
 			scope = getUsersPermissionsByName(scope);
 		}
@@ -182,11 +197,13 @@ export class DirectAuthorization {
 			login,
 			phone,
 			password,
-			apiVersion
+			apiVersion,
+			queryParams
 		} = this.options;
 
 		const params = new URLSearchParams({
 			...query,
+			...queryParams,
 			username: String(login || phone),
 			grant_type: 'password',
 			client_secret: appSecret,
@@ -214,6 +231,8 @@ export class DirectAuthorization {
 		user: number;
 		token: string;
 		expires: number;
+		secret: null | string;
+		webView: null | IDirectWebViewAuth;
 	}> {
 		if (this.started) {
 			throw new AuthorizationError({
@@ -247,8 +266,23 @@ export class DirectAuthorization {
 						email,
 						user_id: user,
 						expires_in: expires,
-						access_token: token
+						access_token: token,
+						secret,
+						webview_access_token: webViewToken,
+						webview_refresh_token: webViewRefreshToken,
+						webview_access_token_expires_in: webViewExpires
 					} = text;
+
+					let webView: null | IDirectWebViewAuth = null;
+					if (webViewToken !== undefined
+						&& webViewRefreshToken !== undefined
+						&& webViewExpires !== undefined) {
+						webView = {
+							token: webViewToken,
+							expires: Number(webViewExpires),
+							refreshToken: webViewRefreshToken
+						};
+					}
 
 					return {
 						email,
@@ -259,7 +293,11 @@ export class DirectAuthorization {
 						token,
 						expires: expires
 							? Number(expires)
-							: 0
+							: 0,
+						secret: secret
+							? String(secret)
+							: null,
+						webView
 					};
 				}
 

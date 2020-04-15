@@ -49,3 +49,33 @@ async function run() {
 
 run().catch(console.error);
 ```
+
+## Example ImplicitFlowWebView
+```js
+import { VK } from 'vk-io';
+
+import { Authorization } from '@vk-io/authorization';
+
+const vk = new VK({
+    // Android vk apps accesses token
+	token: process.env.token,
+
+    // 'secret' received together with the accesses token by authorization with androidApp()
+	appSecret: process.env.secret,
+});
+
+const authorization = new Authorization(vk);
+
+async function run() {
+    const webView = authorization.ImplicitFlowWebView({
+        sourceUrl: 'https://static.vk.com/community_manage/#/main?group_id=1',
+        scope: ['groups', 'stories']
+    });
+    const response = await webView.run();
+
+    console.log('Token:', response.token);
+    console.log('Expires:', response.expires);
+}
+
+run().catch(console.error);
+```
